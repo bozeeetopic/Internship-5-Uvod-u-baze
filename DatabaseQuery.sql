@@ -1,11 +1,10 @@
 USE PostDatabase
 DROP DATABASE MedicalDatabase
 CREATE DATABASE MedicalDatabase
-
 USE MedicalDatabase
 
 CREATE TABLE Persons(
-	Oib nvarchar(11) PRIMARY KEY,
+	Oib nvarchar(11) PRIMARY KEY CHECK (LEN(Oib) = 11),
 	PersonName nvarchar(30) NOT NULL,
 	Surname nvarchar(30) NOT NULL,
 	PhoneNumber nvarchar(14) NOT NULL UNIQUE,
@@ -75,6 +74,8 @@ INSERT INTO Surgeons(PersonOib,SpecialisationId) VALUES
 ('46511186499',2),
 ('46552226499',1)
 INSERT INTO Rooms(RoomNumber,HospitalFloor) VALUES
+(7,0),
+(4,0),
 (100,1),
 (101,1),
 (102,1),
@@ -89,13 +90,13 @@ INSERT INTO OperatingRooms(RoomNumber,HospitalFloor) VALUES
 INSERT INTO Nurses(PersonId,RoomId,OperatingRoomId) VALUES
 ('46552226499',101,null),
 ('46552244499',101,null),
-('88852226499',102,300),
+('88852226499',4,300),
 ('46559996499',null,301),
 ('46553786499',200,302)
 INSERT INTO Patients(PersonOib,DateOfArrival,RoomId) VALUES
-('46553786499','2000-01-01',100),
-('46511186499','2000-01-01',100),
-('46552226499','2000-01-01',100),
+('46553786499','2000-01-01',7),
+('46511186499','2000-01-01',7),
+('46552226499','2000-01-01',7),
 ('46552333499','2000-01-01',100),
 ('46552244499','2000-01-01',101),
 ('88852226499','2000-01-01',102),
@@ -116,19 +117,24 @@ INSERT INTO Surgeries(DateOfOperation,SurgeonOib,SurgeryRoomNumber,PatientOib,Op
 (SYSDATETIME(),'46552226499',300,'46559996499',1)
 
 SELECT * FROM Surgeries
-WHERE DateOfOperation BETWEEN '2020-02-02' AND '2000-03-03' 
+WHERE DateOfOperation BETWEEN '2020-02-02' AND '2021-03-03' 
 ORDER BY DateOfOperation
+SELECT * FROM Surgeries
 
 SELECT PersonName,Surname
 FROM Surgeons INNER JOIN Persons ON Surgeons.PersonOib = Persons.Oib
-WHERE PlaceOfBirth NOT LIKE 'Split' 
+WHERE PlaceOfBirth NOT IN ('Split') 
+SELECT * FROM Surgeons INNER JOIN Persons ON Surgeons.PersonOib = Persons.Oib
 
 UPDATE Nurses SET RoomId=100 WHERE RoomId=4
+SELECT * FROM Nurses
 
 SELECT PersonOib,PersonName,Surname
 FROM Patients INNER JOIN Persons ON Patients.PersonOib = Persons.Oib
 WHERE RoomId = 7
 ORDER BY Surname
+SELECT * FROM Patients INNER JOIN Persons ON Patients.PersonOib = Persons.Oib
 
 SELECT * FROM Surgeries
 WHERE DateOfOperation BETWEEN DATEADD (DAY , -1 , SYSDATETIME())  AND  SYSDATETIME()
+SELECT * FROM Surgeries
