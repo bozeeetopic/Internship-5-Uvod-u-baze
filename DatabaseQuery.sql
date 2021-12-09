@@ -7,7 +7,7 @@ USE MedicalDatabase
 CREATE TABLE Persons(
 	Oib nvarchar(11) PRIMARY KEY,
 	PersonName nvarchar(30) NOT NULL,
-	Surame nvarchar(30) NOT NULL,
+	Surname nvarchar(30) NOT NULL,
 	PhoneNumber nvarchar(14) NOT NULL UNIQUE,
 	Adress nvarchar(20) NOT NULL,
 	PlaceOfBirth nvarchar(20) NOT NULL
@@ -51,7 +51,7 @@ CREATE TABLE Surgeries (
 	OperationType int FOREIGN KEY REFERENCES OperationTypes(Id) NOT NULL,
 )
 
-INSERT INTO Persons(Oib,PersonName,Surame,PhoneNumber,Adress,PlaceOfBirth) VALUES
+INSERT INTO Persons(Oib,PersonName,Surname,PhoneNumber,Adress,PlaceOfBirth) VALUES
 ('46553786499','Ante','Kraljiæ','0985433421','Vukovarska 24','Imacki'),
 ('46511186499','Mate','Matiæ','098523421','Splitcka 21','Split'),
 ('46552226499','Božena','Braica','0981113421','Omiška 2','Omiš'),
@@ -118,3 +118,17 @@ INSERT INTO Surgeries(DateOfOperation,SurgeonOib,SurgeryRoomNumber,PatientOib,Op
 SELECT * FROM Surgeries
 WHERE DateOfOperation BETWEEN '2020-02-02' AND '2000-03-03' 
 ORDER BY DateOfOperation
+
+SELECT PersonName,Surname
+FROM Surgeons INNER JOIN Persons ON Surgeons.PersonOib = Persons.Oib
+WHERE PlaceOfBirth NOT LIKE 'Split' 
+
+UPDATE Nurses SET RoomId=100 WHERE RoomId=4
+
+SELECT PersonOib,PersonName,Surname
+FROM Patients INNER JOIN Persons ON Patients.PersonOib = Persons.Oib
+WHERE RoomId = 7
+ORDER BY Surname
+
+SELECT * FROM Surgeries
+WHERE DateOfOperation BETWEEN DATEADD (DAY , -1 , SYSDATETIME())  AND  SYSDATETIME()
