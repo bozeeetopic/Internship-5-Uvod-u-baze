@@ -127,7 +127,7 @@ WHERE PlaceOfBirth NOT IN ('Split')
 SELECT * FROM Surgeons INNER JOIN Persons ON Surgeons.PersonOib = Persons.Oib
 
 UPDATE Nurses SET RoomId=100 WHERE RoomId=4
-SELECT * FROM Nurses
+SELECT * FROM Nurses INNER JOIN Persons ON PersonId=Oib
 
 SELECT PersonOib,PersonName,Surname
 FROM Patients INNER JOIN Persons ON Patients.PersonOib = Persons.Oib
@@ -138,3 +138,13 @@ SELECT * FROM Patients INNER JOIN Persons ON Patients.PersonOib = Persons.Oib
 SELECT * FROM Surgeries
 WHERE DateOfOperation BETWEEN DATEADD (DAY , -1 , SYSDATETIME())  AND  SYSDATETIME()
 SELECT * FROM Surgeries
+
+SELECT SurgeryRoomNumber, OperationTypes.OperationType,
+		SurgeonData.PersonName AS Surgeon_Name,SurgeonData.Surname AS Surgeon_Surame,SpecialisationName AS Specialisation,
+		Patients.RoomId,PatientData.PersonName AS Patient_Name,PatientData.Surname AS Patient_Surame,PatientData.Adress,PatientData.PlaceOfBirth
+FROM Surgeries INNER JOIN Surgeons ON SurgeonOib=Surgeons.PersonOib
+				INNER JOIN Patients ON PatientOib=Patients.PersonOib 
+				INNER JOIN Specialisations ON Surgeons.SpecialisationId = Specialisations.Id
+				INNER JOIN OperationTypes ON Surgeries.OperationType = OperationTypes.Id
+				INNER JOIN Persons SurgeonData ON SurgeonOib=SurgeonData.Oib
+				INNER JOIN Persons PatientData ON PatientOib=PatientData.Oib
