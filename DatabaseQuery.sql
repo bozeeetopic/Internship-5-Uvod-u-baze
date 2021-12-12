@@ -1,14 +1,12 @@
-USE PostDatabase
-DROP DATABASE MedicalDatabase
-CREATE DATABASE MedicalDatabase
-USE MedicalDatabase
+CREATE DATABASE HospitalDatabase
+USE HospitalDatabase
 
-CREATE TABLE Persons(
+CREATE TABLE People(
 	Oib nvarchar(11) PRIMARY KEY CHECK (LEN(Oib) = 11),
-	PersonName nvarchar(30) NOT NULL,
+	[Name] nvarchar(30) NOT NULL,
 	Surname nvarchar(30) NOT NULL,
 	PhoneNumber nvarchar(14) NOT NULL UNIQUE,
-	Adress nvarchar(20) NOT NULL,
+	Adress nvarchar(50) NOT NULL,
 	PlaceOfBirth nvarchar(20) NOT NULL
 )
 CREATE TABLE Specialisations (
@@ -20,26 +18,28 @@ CREATE TABLE OperationTypes (
 	OperationType nvarchar(30) NOT NULL UNIQUE
 )
 CREATE TABLE Surgeons (
-	PersonOib nvarchar(11) PRIMARY KEY REFERENCES Persons(Oib),
+	PersonOib nvarchar(11) PRIMARY KEY REFERENCES People(Oib),
 	SpecialisationId int FOREIGN KEY REFERENCES Specialisations(Id) NOT NULL
 )
 CREATE TABLE Rooms (
-	RoomNumber int PRIMARY KEY,
+	Id int IDENTITY(1,1) PRIMARY KEY,
+	RoomNumber int UNIQUE,
 	HospitalFloor int NOT NULL
 )
 CREATE TABLE OperatingRooms (
-	RoomNumber int PRIMARY KEY,
+	Id int IDENTITY(1,1) PRIMARY KEY,
+	RoomNumber int UNIQUE,
 	HospitalFloor int NOT NULL
 )
 CREATE TABLE Nurses (
-	PersonId nvarchar(11) PRIMARY KEY REFERENCES Persons(Oib),
-	RoomId int FOREIGN KEY REFERENCES Rooms(RoomNumber),
-	OperatingRoomId int FOREIGN KEY REFERENCES OperatingRooms(RoomNumber)
+	PersonId nvarchar(11) PRIMARY KEY REFERENCES People(Oib),
+	RoomNumber int FOREIGN KEY REFERENCES Rooms(RoomNumber),
+	OperatingRoomNumber int FOREIGN KEY REFERENCES OperatingRooms(RoomNumber)
 )
 CREATE TABLE Patients (
-	PersonOib nvarchar(11) PRIMARY KEY REFERENCES Persons(Oib),
+	PersonOib nvarchar(11) PRIMARY KEY REFERENCES People(Oib),
 	DateOfArrival datetime2 NOT NULL,
-	RoomId int FOREIGN KEY REFERENCES Rooms(RoomNumber) NOT NULL
+	RoomNumber int FOREIGN KEY REFERENCES Rooms(RoomNumber) NOT NULL
 )
 CREATE TABLE Surgeries (
 	Id int IDENTITY(1,1) PRIMARY KEY,
@@ -50,7 +50,7 @@ CREATE TABLE Surgeries (
 	OperationType int FOREIGN KEY REFERENCES OperationTypes(Id) NOT NULL,
 )
 
-INSERT INTO Persons(Oib,PersonName,Surname,PhoneNumber,Adress,PlaceOfBirth) VALUES
+INSERT INTO People(Oib,[Name],Surname,PhoneNumber,Adress,PlaceOfBirth) VALUES
 ('46553786499','Ante','Kraljiæ','0985433421','Vukovarska 24','Imacki'),
 ('46511186499','Mate','Matiæ','098523421','Splitcka 21','Split'),
 ('46552226499','Božena','Braica','0981113421','Omiška 2','Omiš'),
@@ -87,13 +87,13 @@ INSERT INTO OperatingRooms(RoomNumber,HospitalFloor) VALUES
 (300,3),
 (301,3),
 (302,3)
-INSERT INTO Nurses(PersonId,RoomId,OperatingRoomId) VALUES
+INSERT INTO Nurses(PersonId,RoomNumber,OperatingRoomNumber) VALUES
 ('46552226499',101,null),
 ('46552244499',101,null),
 ('88852226499',4,300),
 ('46559996499',null,301),
 ('46553786499',200,302)
-INSERT INTO Patients(PersonOib,DateOfArrival,RoomId) VALUES
+INSERT INTO Patients(PersonOib,DateOfArrival,RoomNumber) VALUES
 ('46553786499','2000-01-01',7),
 ('46511186499','2000-01-01',7),
 ('46552226499','2000-01-01',7),
@@ -116,35 +116,41 @@ INSERT INTO Surgeries(DateOfOperation,SurgeonOib,SurgeryRoomNumber,PatientOib,Op
 (SYSDATETIME(),'46552226499',300,'88852226499',1),
 (SYSDATETIME(),'46552226499',300,'46559996499',1)
 
+
 SELECT * FROM Surgeries
-WHERE DateOfOperation BETWEEN '2020-02-02' AND '2021-03-03' 
+WHERE DateOfOperation BETWEEN '2021-02-02' AND '2021-02-03' 
 ORDER BY DateOfOperation
 SELECT * FROM Surgeries
 
-SELECT PersonName,Surname
-FROM Surgeons INNER JOIN Persons ON Surgeons.PersonOib = Persons.Oib
+SELECT [Name],Surname
+FROM Surgeons INNER JOIN People ON Surgeons.PersonOib = People.Oib
 WHERE PlaceOfBirth NOT IN ('Split') 
-SELECT * FROM Surgeons INNER JOIN Persons ON Surgeons.PersonOib = Persons.Oib
+SELECT * FROM Surgeons INNER JOIN People ON Surgeons.PersonOib = People.Oib
 
-UPDATE Nurses SET RoomId=100 WHERE RoomId=4
-SELECT * FROM Nurses INNER JOIN Persons ON PersonId=Oib
+UPDATE Nurses SET RoomNumber=100 WHERE RoomNumber=4
+SELECT * FROM Nurses INNER JOIN People ON PersonId=Oib
 
-SELECT PersonOib,PersonName,Surname
-FROM Patients INNER JOIN Persons ON Patients.PersonOib = Persons.Oib
-WHERE RoomId = 7
+SELECT PersonOib,[Name],Surname
+FROM Patients INNER JOIN People ON Patients.PersonOib = People.Oib
+WHERE RoomNumber = 7
 ORDER BY Surname
-SELECT * FROM Patients INNER JOIN Persons ON Patients.PersonOib = Persons.Oib
+SELECT * FROM Patients INNER JOIN People ON Patients.PersonOib = People.Oib
 
 SELECT * FROM Surgeries
 WHERE DateOfOperation BETWEEN DATEADD (DAY , -1 , SYSDATETIME())  AND  SYSDATETIME()
 SELECT * FROM Surgeries
 
+
+/*
 SELECT SurgeryRoomNumber, OperationTypes.OperationType,
-		SurgeonData.PersonName AS Surgeon_Name,SurgeonData.Surname AS Surgeon_Surame,SpecialisationName AS Specialisation,
-		Patients.RoomId,PatientData.PersonName AS Patient_Name,PatientData.Surname AS Patient_Surame,PatientData.Adress,PatientData.PlaceOfBirth
+		SurgeonData.[Name] AS Surgeon_Name,SurgeonData.Surname AS Surgeon_Surame,SpecialisationName AS Specialisation,
+		Patients.RoomNumber,PatientData.[Name] AS Patient_Name,PatientData.Surname AS Patient_Surame,PatientData.Adress,PatientData.PlaceOfBirth
 FROM Surgeries INNER JOIN Surgeons ON SurgeonOib=Surgeons.PersonOib
 				INNER JOIN Patients ON PatientOib=Patients.PersonOib 
 				INNER JOIN Specialisations ON Surgeons.SpecialisationId = Specialisations.Id
 				INNER JOIN OperationTypes ON Surgeries.OperationType = OperationTypes.Id
-				INNER JOIN Persons SurgeonData ON SurgeonOib=SurgeonData.Oib
-				INNER JOIN Persons PatientData ON PatientOib=PatientData.Oib
+				INNER JOIN People SurgeonData ON SurgeonOib=SurgeonData.Oib
+				INNER JOIN People PatientData ON PatientOib=PatientData.Oib
+				
+				extra query za znatizeljne
+				*/ 
